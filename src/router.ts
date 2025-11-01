@@ -1,4 +1,5 @@
 import { IncomingMessage, ServerResponse } from 'http';
+import { User } from './types.js';
 import {
     addUser,
     editUser,
@@ -33,7 +34,12 @@ export const route = async (req: IncomingMessage, res: ServerResponse) => {
         });
     };
 
-    const sendResponse = (result: { status: number; body: any }) => {
+    interface ApiResponse {
+        status: number;
+        body: User | User[] | { message: string } | null;
+    }
+
+    const sendResponse = (result: ApiResponse) => {
         res.writeHead(result.status, { 'Content-Type': 'application/json' });
         if (result.body !== null) {
             res.end(JSON.stringify(result.body));
@@ -78,7 +84,7 @@ export const route = async (req: IncomingMessage, res: ServerResponse) => {
             status: 404,
             body: { message: 'Not found' }
         });
-    } catch (err: any) {
+    } catch (err: unknown) {
         sendResponse({
             status: 500,
             body: { message: 'Internal server error' }

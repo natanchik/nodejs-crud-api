@@ -1,11 +1,11 @@
 import request from 'supertest';
 import { app } from '../index.js';
 import { clearStore } from '../store.js';
-import { CreateUserDto, User } from '../types.js';
+import { CreateUserDto } from '../types.js';
 
 describe('Users API', () => {
-    beforeEach(async () => {
-        await clearStore();
+    beforeEach(() => {
+        clearStore();
     });
 
     describe('CRUD Operations', () => {

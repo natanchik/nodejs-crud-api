@@ -21,7 +21,7 @@
         "build": "webpack --mode production --config webpack.config.cjs",
         "start:dev": "cross-env NODE_ENV=development node --import tsx src/index.ts",
         "start:prod": "cross-env NODE_ENV=production npm run build && node dist/bundle.mjs",
-        "lint": "eslint './src/**/*.{ts,js}' --fix",
+        "lint": "eslint \"./src/**/*.{ts,js}\" --fix",
         "format": "prettier --write './**/*.{ts,js,json,md}'",
         "test": "cross-env NODE_OPTIONS=\"--experimental-vm-modules --experimental-import-meta-resolve\" jest",
         "typecheck": "tsc --noEmit"
