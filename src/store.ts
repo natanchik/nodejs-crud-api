@@ -1,10 +1,38 @@
 import { User, CreateUserDto, UpdateUserDto } from './types.js';
 import { v4 as uuidv4 } from 'uuid';
 import { validate as validateUUID } from 'uuid';
+import cluster from 'cluster';
 
 const store = new Map<string, User>();
 
-// Add initial test users
+if (!cluster.isPrimary && cluster.worker) {
+    process.on('message', (message: { type: string; data: any }) => {
+        if (message.type === 'store-update') {
+            const { action, payload } = message.data;
+            switch (action) {
+                case 'set':
+                    store.set(payload.id, payload.user);
+                    break;
+                case 'delete':
+                    store.delete(payload.id);
+                    break;
+                case 'clear':
+                    store.clear();
+                    break;
+            }
+        }
+    });
+}
+
+const broadcastStoreUpdate = (action: string, payload: any) => {
+    if (cluster.worker && process.send) {
+        process.send({
+            type: 'store-update',
+            data: { action, payload }
+        });
+    }
+};
+
 const initialUsers: CreateUserDto[] = [
     {
         username: 'John Doe',
@@ -23,7 +51,6 @@ const initialUsers: CreateUserDto[] = [
     }
 ];
 
-// Initialize store with test users
 initialUsers.forEach((userData) => {
     const id = uuidv4();
     const user: User = {
@@ -72,6 +99,7 @@ export const createUser = async (data: CreateUserDto): Promise<User> => {
         hobbies: data.hobbies
     };
     store.set(id, user);
+    broadcastStoreUpdate('set', { id, user });
     return user;
 };
 
@@ -103,6 +131,7 @@ export const updateUser = async (
         ...data
     };
     store.set(id, updated);
+    broadcastStoreUpdate('set', { id, user: updated });
     return updated;
 };
 
@@ -112,6 +141,7 @@ export const deleteUser = async (id: string): Promise<void> => {
         throw new NotFoundError(`User with id ${id} not found`);
     }
     store.delete(id);
+    broadcastStoreUpdate('delete', { id });
 };
 
 export const clearStore = (): void => {
