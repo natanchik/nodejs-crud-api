@@ -3,28 +3,46 @@ import { v4 as uuidv4 } from 'uuid';
 import { validate as validateUUID } from 'uuid';
 import cluster from 'cluster';
 
+interface StoreUpdatePayload {
+    id?: string;
+    user?: User;
+}
+
+interface StoreMessage {
+    type: 'store-update';
+    data: {
+        action: 'set' | 'delete' | 'clear';
+        payload: StoreUpdatePayload;
+    };
+}
+
 const store = new Map<string, User>();
 
 if (!cluster.isPrimary && cluster.worker) {
-    process.on('message', (message: { type: string; data: any }) => {
-        if (message.type === 'store-update') {
-            const { action, payload } = message.data;
-            switch (action) {
-                case 'set':
+    process.on('message', (message: StoreMessage) => {
+        const { action, payload } = message.data;
+        switch (action) {
+            case 'set':
+                if (payload.id && payload.user) {
                     store.set(payload.id, payload.user);
-                    break;
-                case 'delete':
+                }
+                break;
+            case 'delete':
+                if (payload.id) {
                     store.delete(payload.id);
-                    break;
-                case 'clear':
-                    store.clear();
-                    break;
-            }
+                }
+                break;
+            case 'clear':
+                store.clear();
+                break;
         }
     });
 }
 
-const broadcastStoreUpdate = (action: string, payload: any) => {
+const broadcastStoreUpdate = (
+    action: StoreMessage['data']['action'],
+    payload: StoreUpdatePayload
+): void => {
     if (cluster.worker && process.send) {
         process.send({
             type: 'store-update',

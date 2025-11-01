@@ -9,7 +9,6 @@ import {
 } from './controllers/usersController.js';
 
 function parseId(url: string): string | undefined {
-    // Match UUID format after /api/users/
     const m = url.match(
         /^\/api\/users\/([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})$/i
     );
@@ -20,7 +19,6 @@ export const route = async (req: IncomingMessage, res: ServerResponse) => {
     const method = req.method ?? 'GET';
     const url = req.url ?? '/';
 
-    // helper to parse JSON body
     const parseBody = async (): Promise<string> => {
         return new Promise((resolve, reject) => {
             const chunks: Buffer[] = [];

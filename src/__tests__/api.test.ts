@@ -22,7 +22,6 @@ describe('Users API', () => {
                 hobbies: ['reading', 'gaming']
             };
 
-            // Create new user
             const createResponse = await request(app)
                 .post('/api/users')
                 .send(newUser)
@@ -33,7 +32,6 @@ describe('Users API', () => {
                 id: expect.any(String)
             });
 
-            // Get user by id
             const getUserResponse = await request(app)
                 .get(`/api/users/${createResponse.body.id}`)
                 .expect(200);
@@ -42,7 +40,6 @@ describe('Users API', () => {
         });
 
         it('should update user and verify the changes', async () => {
-            // Create initial user
             const initialUser: CreateUserDto = {
                 username: 'Jane Doe',
                 age: 30,
@@ -56,7 +53,6 @@ describe('Users API', () => {
 
             const userId = createResponse.body.id;
 
-            // Update user
             const updateData = {
                 username: 'Jane Smith',
                 hobbies: ['painting', 'dancing']
@@ -72,7 +68,6 @@ describe('Users API', () => {
                 ...updateData
             });
 
-            // Verify updated data
             const getUpdatedResponse = await request(app)
                 .get(`/api/users/${userId}`)
                 .expect(200);
@@ -81,7 +76,6 @@ describe('Users API', () => {
         });
 
         it('should delete user and confirm its removal', async () => {
-            // Create user to delete
             const userToDelete: CreateUserDto = {
                 username: 'To Delete',
                 age: 35,
@@ -95,10 +89,8 @@ describe('Users API', () => {
 
             const userId = createResponse.body.id;
 
-            // Delete user
             await request(app).delete(`/api/users/${userId}`).expect(204);
 
-            // Try to get deleted user
             await request(app).get(`/api/users/${userId}`).expect(404);
         });
 
